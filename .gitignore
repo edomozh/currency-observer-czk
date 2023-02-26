@@ -351,3 +351,4 @@ MigrationBackup/
 
 # App Settings
 WebApi/appsettings.json
+GrabExchangeRatesService/appsettings.json
