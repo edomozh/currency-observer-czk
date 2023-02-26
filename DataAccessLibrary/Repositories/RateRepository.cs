@@ -44,13 +44,16 @@ namespace DataAccessLibrary.Repositories
                     .Where(r => r.CurrencyId == rate.CurrencyId && r.Date == rate.Date)
                     .FirstOrDefault();
 
-                if (existingRate == null)
+                if (existingRate != null)
+                {
+                    rate.Id = existingRate.Id;
+                }
+                else
                 {
                     _dbContext.Rates.Add(rate);
+                    _dbContext.SaveChanges();
                 }
             }
-
-            _dbContext.SaveChanges();
         }
     }
 }

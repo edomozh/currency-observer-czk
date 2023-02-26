@@ -16,13 +16,21 @@ namespace DataAccessLibrary.Repositories
         {
             foreach (var currency in currencies)
             {
-                if (!_dbContext.Currencies.Any(c => c.Code == currency.Code))
+                var existingCurrency =
+                    _dbContext.Currencies.FirstOrDefault(c =>
+                        c.Code == currency.Code &&
+                        c.Multiplier == currency.Multiplier);
+
+                if (existingCurrency != null)
+                {
+                    currency.Id = existingCurrency.Id;
+                }
+                else
                 {
                     _dbContext.Currencies.Add(currency);
+                    _dbContext.SaveChanges();
                 }
             }
-
-            _dbContext.SaveChanges();
         }
 
         public List<Currency> SelectAllCurrencies()
@@ -30,7 +38,7 @@ namespace DataAccessLibrary.Repositories
             return _dbContext.Currencies.ToList();
         }
 
-        public List<Currency> SelectCurrencies(string code, short multiplier)
+        public List<Currency> SelectCurrencies(string code, int multiplier)
         {
             return _dbContext.Currencies
                 .Where(c => c.Code == code && c.Multiplier == multiplier)

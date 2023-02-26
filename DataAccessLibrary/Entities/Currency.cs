@@ -14,6 +14,6 @@ namespace DataAccessLibrary.Entities
         [StringLength(3)]
         public string Code { get; set; } = string.Empty;
 
-        public short Multiplier { get; set; }
+        public int Multiplier { get; set; }
     }
 }

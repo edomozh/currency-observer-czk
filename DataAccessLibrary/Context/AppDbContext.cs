@@ -26,10 +26,10 @@ namespace DataAccessLibrary.Contexts
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Currency>()
-                .HasAlternateKey(c => new { c.Code, c.Multiplier });
+                .HasIndex(c => new { c.Code, c.Multiplier });
 
             modelBuilder.Entity<Rate>()
-                .HasAlternateKey(c => new { c.CurrencyId, c.Date });
+                .HasIndex(c => new { c.CurrencyId, c.Date });
 
         }
     }

@@ -9,33 +9,20 @@ namespace GrabExchangeRatesService
     class Program
     {
         private static IConfigurationRoot? configuration;
-        private static AppDbContext? appDbContext;
-        private static CurrencyRepository? currencyRepository;
-        private static RateRepository? rateRepository;
-
-        private static void Initialize()
-        {
-            configuration = new ConfigurationBuilder()
-                        .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.json")
-                        .Build();
-
-            appDbContext = new AppDbContext(configuration);
-
-            currencyRepository = new CurrencyRepository(appDbContext);
-            rateRepository = new RateRepository(appDbContext);
-        }
 
         static void Main(string[] args)
         {
-            Initialize();
+            configuration = new ConfigurationBuilder()
+                       .SetBasePath(Directory.GetCurrentDirectory())
+                       .AddJsonFile("appsettings.json")
+                       .Build();
 
-            var availableYears = Enumerable.Range(1991, DateTime.Now.Year - 1990);
+            using var appDbContext = new AppDbContext(configuration);
+            var currencyRepository = new CurrencyRepository(appDbContext);
+            var rateRepository = new RateRepository(appDbContext);
 
             // get a last date from db
-            // var latestRate = rateRepository.SelectLatestDate();
-
-            var latestRate = DateTime.Now.AddDays(-1);
+            var latestRate = rateRepository.SelectLatestDate();
 
             if (latestRate.Date.CompareTo(DateTime.Now.Date) == 0)
             {
@@ -43,23 +30,20 @@ namespace GrabExchangeRatesService
                 return;
             }
 
+            var availableYears = Enumerable.Range(1991, DateTime.Now.Year - 1990);
             var missingYears = availableYears.Where(y => y >= latestRate.Date.Year).ToArray();
 
             // get all data for missing dates
             var validCsvLists = GetRatesCsvByYears(missingYears);
 
             // parse currencies and save
-            var currencies = GetCurrenciesFromHeader(validCsvLists);
-            currencyRepository!.InsertIfNotExists(currencies);
+            var currencies = GetCurrenciesFromCsvHeaders(validCsvLists);
+            currencyRepository.InsertIfNotExists(currencies);
 
             // parse rates and save
             var rates = GetRates(validCsvLists, currencies);
-            // rateRepository.InsertIfNotExists(rates);
-
-            // dispose all
-
+            rateRepository.InsertIfNotExists(rates);
         }
-
 
         private static List<Rate> GetRates(List<List<string>> validCsvLists, List<Currency> currencies)
         {
@@ -69,15 +53,16 @@ namespace GrabExchangeRatesService
             {
                 var headers = csv.First()
                     .Split('|')
-                    .Select(c => c == "Date" ? (0, "Date") : ExtractMultipaier(c))
-                    .Select(c => currencies.Find(cur => cur.Multiplier == c.Item1 && cur.Code == c.Item2))
+                    .Where(h => !h.Equals("Date"))
+                    .Select(c => StringToCurrency(c))
+                    .Select(c => currencies.Single(cur => cur.Multiplier == c.Multiplier && cur.Code == c.Code))
                     .ToList();
 
-                var devidedByDateRates = csv
-                    .Where(r => !r.StartsWith("Data"))
+                var ratesDevidedByDate = csv
+                    .Where(r => !r.StartsWith("Date"))
                     .Select(r => r.Split('|'));
 
-                foreach (var oneDayRates in devidedByDateRates)
+                foreach (var oneDayRates in ratesDevidedByDate)
                 {
                     var date = DateTime.ParseExact(oneDayRates[0], "dd.MM.yyyy", CultureInfo.InvariantCulture);
 
@@ -90,22 +75,45 @@ namespace GrabExchangeRatesService
                             Date = date,
                         });
                     }
-
                 }
             }
 
             return rates;
         }
 
-        private static List<Currency> GetCurrenciesFromHeader(List<List<string>> validCsvLists)
+        private static List<Currency> GetCurrenciesFromCsvHeaders(List<List<string>> validCsvLists)
         {
             var headers = validCsvLists
-                .Select(csv => csv.First().Split('|'));
+                .Select(csv => csv.First().Split('|').Where(h => !h.Equals("Date")));
 
-            var currencies = headers.Where(h => h.Equals("Data"));
+            var uniqueCurrencies = MergeArrays(headers);
 
-            return new List<Currency>();
+            var currencies = new List<Currency>();
+
+            foreach (var currencyStr in uniqueCurrencies)
+            {
+                if (currencyStr.Equals("Date")) continue;
+
+                var currency = StringToCurrency(currencyStr);
+
+                currencies.Add(currency);
+            }
+
+            return currencies;
         }
+
+        public static string[] MergeArrays(IEnumerable<IEnumerable<string>> arrays)
+        {
+            var uniqueValues = new HashSet<string>();
+
+            foreach (var array in arrays)
+                foreach (var value in array)
+                    uniqueValues.Add(value);
+
+
+            return uniqueValues.ToArray();
+        }
+
 
         public static List<List<string>> GetRatesCsvByYears(int[] years)
         {
@@ -113,9 +121,9 @@ namespace GrabExchangeRatesService
 
             foreach (var year in years)
             {
-                var rates = GetRatesByUrl(year);
+                var rates = GetCsvByUrl(year);
 
-                var lists = DevideByConcreteHeader(rates);
+                var lists = DevideCsvByHeaders(rates);
 
                 result.AddRange(lists);
             }
@@ -123,7 +131,7 @@ namespace GrabExchangeRatesService
             return result;
         }
 
-        private static List<List<string>> DevideByConcreteHeader(string[] csvPage)
+        private static List<List<string>> DevideCsvByHeaders(string[] csvPage)
         {
             var result = new List<List<string>>();
 
@@ -149,21 +157,20 @@ namespace GrabExchangeRatesService
             return result;
         }
 
-
-
-
-        private static (short multiplayer, string code) ExtractMultipaier(string header)
+        private static Currency StringToCurrency(string header)
         {
             string[] parts = header.Split(' ');
 
             if (parts.Length != 2)
-                throw new ArgumentException("Invalid currency string format.", nameof(header));
+                throw new NullReferenceException("Invalid currency string format.");
 
-            if (!short.TryParse(parts[0], out short amount))
-                throw new ArgumentException("Invalid currency amount value.", nameof(header));
+            if (!int.TryParse(parts[0], out int amount))
+                throw new NullReferenceException("Invalid currency amount value.");
 
-            string currencyCode = parts[1];
-            return (amount, currencyCode);
+            if (parts[1].Length > 3)
+                throw new NullReferenceException("Invalid currency code.");
+
+            return new Currency { Multiplier = amount, Code = parts[1] };
         }
 
         private static string GetConfigValue(string path)
@@ -173,17 +180,14 @@ namespace GrabExchangeRatesService
 
             return configuration.GetValue<string>(path) ??
                 throw new NullReferenceException($"There is no config by path: {path}.");
-
         }
 
-        public static string[] GetRatesByUrl(int year)
+        public static string[] GetCsvByUrl(int year)
         {
             var url = GetConfigValue("ExternalUrls:GetCZKRate");
 
-            // Create a new HttpClient instance
             using var httpClient = new HttpClient();
 
-            // Download the CSV data as a string
             var csvData = httpClient.GetStringAsync(url + year).GetAwaiter().GetResult();
 
             return csvData.Split(new[] { '\r', '\n' });
