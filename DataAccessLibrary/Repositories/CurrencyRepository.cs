@@ -14,22 +14,15 @@ namespace DataAccessLibrary.Repositories
 
         public void InsertIfNotExists(List<Currency> currencies)
         {
-            foreach (var currency in currencies)
-            {
-                var existingCurrency =
-                    _dbContext.Currencies.FirstOrDefault(c =>
-                        c.Code == currency.Code &&
-                        c.Multiplier == currency.Multiplier);
+            var existingRates = _dbContext.Currencies.ToList();
+            var newRates = currencies
+                    .Where(c => !existingRates.Any(ec => ec.Multiplier == c.Multiplier && ec.Code == c.Code))
+                    .ToList();
 
-                if (existingCurrency != null)
-                {
-                    currency.Id = existingCurrency.Id;
-                }
-                else
-                {
-                    _dbContext.Currencies.Add(currency);
-                    _dbContext.SaveChanges();
-                }
+            if (newRates.Any())
+            {
+                _dbContext.AddRange(newRates);
+                _dbContext.SaveChanges();
             }
         }
 

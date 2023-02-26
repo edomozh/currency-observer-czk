@@ -38,21 +38,15 @@ namespace DataAccessLibrary.Repositories
 
         public void InsertIfNotExists(List<Rate> rates)
         {
-            foreach (var rate in rates)
-            {
-                var existingRate = _dbContext.Rates
-                    .Where(r => r.CurrencyId == rate.CurrencyId && r.Date == rate.Date)
-                    .FirstOrDefault();
+            var existingRates = _dbContext.Rates.ToList();
+            var newRates = rates
+                    .Where(c => !existingRates.Any(ec => ec.Date == c.Date && ec.CurrencyId == c.CurrencyId))
+                    .ToList();
 
-                if (existingRate != null)
-                {
-                    rate.Id = existingRate.Id;
-                }
-                else
-                {
-                    _dbContext.Rates.Add(rate);
-                    _dbContext.SaveChanges();
-                }
+            if (newRates.Any())
+            {
+                _dbContext.AddRange(newRates);
+                _dbContext.SaveChanges();
             }
         }
     }

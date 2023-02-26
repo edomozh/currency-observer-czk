@@ -52,7 +52,7 @@ namespace GrabExchangeRatesService
             foreach (var csv in validCsvLists)
             {
                 var headers = csv.First()
-                    .Split('|')
+                    .Split('|', StringSplitOptions.RemoveEmptyEntries)
                     .Where(h => !h.Equals("Date"))
                     .Select(c => StringToCurrency(c))
                     .Select(c => currencies.Single(cur => cur.Multiplier == c.Multiplier && cur.Code == c.Code))
@@ -60,7 +60,8 @@ namespace GrabExchangeRatesService
 
                 var ratesDevidedByDate = csv
                     .Where(r => !r.StartsWith("Date"))
-                    .Select(r => r.Split('|'));
+                    .Select(r => r.Split('|', StringSplitOptions.RemoveEmptyEntries))
+                    .Where(r => r.Count() > 1);
 
                 foreach (var oneDayRates in ratesDevidedByDate)
                 {
@@ -84,7 +85,7 @@ namespace GrabExchangeRatesService
         private static List<Currency> GetCurrenciesFromCsvHeaders(List<List<string>> validCsvLists)
         {
             var headers = validCsvLists
-                .Select(csv => csv.First().Split('|').Where(h => !h.Equals("Date")));
+                .Select(csv => csv.First().Split('|', StringSplitOptions.RemoveEmptyEntries).Where(h => !h.Equals("Date")));
 
             var uniqueCurrencies = MergeArrays(headers);
 
