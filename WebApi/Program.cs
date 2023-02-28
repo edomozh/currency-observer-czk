@@ -20,9 +20,21 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<RateRepository>();
 builder.Services.AddScoped<CurrencyRepository>();
 
-builder.Services.AddControllers();
 builder.Services.AddScoped<RateService>();
 builder.Services.AddScoped<CurrencyService>();
+
+builder.Services.AddControllers();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigins",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:4200")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
 
 var app = builder.Build();
 
@@ -31,6 +43,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("AllowSpecificOrigins");
+
+app.UseRouting();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+});
 
 app.UseHttpsRedirection();
 

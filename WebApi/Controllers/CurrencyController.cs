@@ -16,6 +16,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet]
+        [Route("")]
         public IActionResult Get()
         {
             try
