@@ -38,7 +38,7 @@ namespace GrabExchangeRatesService
 
             // parse currencies and save
             var currencies = GetCurrenciesFromCsvHeaders(validCsvLists);
-            currencyRepository.InsertIfNotExists(currencies);
+            currencyRepository.InsertIfNotExistsAndFillId(currencies);
 
             // parse rates and save
             var rates = GetRates(validCsvLists, currencies);

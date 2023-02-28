@@ -26,6 +26,27 @@ namespace DataAccessLibrary.Repositories
             }
         }
 
+        public void InsertIfNotExistsAndFillId(List<Currency> currencies)
+        {
+            foreach (var currency in currencies)
+            {
+                var existingCurrency =
+                    _dbContext.Currencies.FirstOrDefault(c =>
+                        c.Code == currency.Code &&
+                        c.Multiplier == currency.Multiplier);
+
+                if (existingCurrency != null)
+                {
+                    currency.Id = existingCurrency.Id;
+                }
+                else
+                {
+                    _dbContext.Currencies.Add(currency);
+                    _dbContext.SaveChanges();
+                }
+            }
+        }
+
         public List<Currency> SelectAllCurrencies()
         {
             return _dbContext.Currencies.ToList();
