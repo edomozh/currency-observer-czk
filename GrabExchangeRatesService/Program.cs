@@ -67,12 +67,13 @@ namespace GrabExchangeRatesService
                 {
                     var date = DateTime.ParseExact(oneDayRates[0], "dd.MM.yyyy", CultureInfo.InvariantCulture);
 
-                    for (var i = 1; i < headers.Count; i++)
+                    for (var i = 0; i < headers.Count; i++)
                     {
                         rates.Add(new Rate
                         {
                             CurrencyId = headers[i].Id,
-                            Value = Convert.ToDouble(oneDayRates[i]),
+                            // we removed Date from headers so indexes shifted
+                            Value = Convert.ToDouble(oneDayRates[i+1]),
                             Date = date,
                         });
                     }

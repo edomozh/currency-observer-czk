@@ -6,7 +6,7 @@ import { Component, Output, EventEmitter } from '@angular/core';
   styleUrls: ['./date-picker.component.css']
 })
 export class DatePickerComponent {
-  selectedDate: string = new Date().toLocaleDateString("en-GE");
+  selectedDate: string = new Date().toISOString().split('T')[0];
 
   @Output() dateSelected: EventEmitter<string> = new EventEmitter<string>();
 

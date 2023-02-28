@@ -28,5 +28,20 @@ namespace WebApi.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        [HttpGet]
+        [Route("GetAvailable")]
+        public IActionResult GetAvailable(string ddMMyyyyDate)
+        {
+            try
+            {
+                var currencies = _currencyService.GetCurrencies(ddMMyyyyDate);
+                return Ok(currencies);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
     }
 }

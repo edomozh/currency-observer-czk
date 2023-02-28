@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 import { RateService } from '../services/rate.service';
 import { CurrencyService } from '../services/currency.service';
@@ -26,10 +28,14 @@ export class RateCheckerComponent implements OnInit {
   }
 
   getRate() {
-    this.rateService.getRate(this.selectedCurrency, this.selectedDate).subscribe(value => this.rate = value);
+    this.rateService
+      .getRate(this.selectedCurrency, this.selectedDate)
+      .pipe(catchError((err) => of(null)))
+      .subscribe(value => this.rate = value);
   }
 
   onDateSelected(date: string): void {
+    this.currencyService.getAvailableCurrencies(date).subscribe(value => this.currencies = value);
     this.selectedDate = date;
     this.getRate();
   }

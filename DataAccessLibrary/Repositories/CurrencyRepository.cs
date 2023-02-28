@@ -1,5 +1,6 @@
 ﻿using DataAccessLibrary.Contexts;
 using DataAccessLibrary.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAccessLibrary.Repositories
 {
@@ -10,6 +11,14 @@ namespace DataAccessLibrary.Repositories
         public CurrencyRepository(AppDbContext dbContext)
         {
             _dbContext = dbContext;
+        }
+
+        public IEnumerable<Currency> GetCurrencies(DateTime date)
+        {
+            return from currency in _dbContext.Currencies
+                   join rate in _dbContext.Rates on currency.Id equals rate.CurrencyId
+                   where rate.Date == date
+                   select currency;
         }
 
         public IEnumerable<Currency> GetCurrencies()

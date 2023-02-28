@@ -1,18 +1,18 @@
-<div class="container mt-3">
+<div class="container mt-3 w-50">
   <div class="row">
-    <div class="col-md-4">
+    <div class="col-5">
       <app-date-picker (dateSelected)="onDateSelected($event)"></app-date-picker>
     </div>
-    <div class="col-md-4">
+    <div class="col-7">
       <select class="form-select" [(ngModel)]="selectedCurrency" (ngModelChange)="getRate()">
-        <option value="USD" selected>Choose some currency</option>
+
         <option *ngFor="let currency of currencies" [value]="currency.code">{{ currency.code }}</option>
       </select>
     </div>
-    <div class="col-md-4">
+    <div class="col-12 mt-3">
       <div class="text-center">
-        <h4>Rate:</h4>
-        <div>{{ rate?.value }}</div>
+        <p *ngIf="rate">1 CZK EQUALS {{ rate.value }} {{ selectedCurrency }}</p>
+        <p *ngIf="!rate">NO DATA AVAILABLE</p>
       </div>
     </div>
   </div>
