@@ -15,7 +15,6 @@ namespace DataAccessLibrary.Contexts
         public AppDbContext(IConfiguration configuration)
         {
             _configuration = configuration;
-
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
