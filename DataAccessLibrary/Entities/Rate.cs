@@ -12,6 +12,8 @@ namespace DataAccessLibrary.Entities
         [Required]
         public ulong CurrencyId { get; set; }
 
+        public Currency? Currency { get; set; }
+
         [Required]
         [DataType(DataType.Date)]
         public DateTime Date { get; set; }

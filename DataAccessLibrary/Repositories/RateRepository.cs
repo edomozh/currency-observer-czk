@@ -1,5 +1,6 @@
 ﻿using DataAccessLibrary.Contexts;
 using DataAccessLibrary.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAccessLibrary.Repositories
 {
@@ -10,21 +11,6 @@ namespace DataAccessLibrary.Repositories
         public RateRepository(AppDbContext dbContext)
         {
             _dbContext = dbContext;
-        }
-
-        public Rate SelectRate(string currencyCode, DateTime date)
-        {
-            var currencyIds = _dbContext.Currencies
-                .Where(c => c.Code == currencyCode)
-                .Select(c => c.Id)
-                .ToList();
-
-            var rate = _dbContext.Rates
-                .Where(r => currencyIds.Contains(r.CurrencyId) && r.Date <= date)
-                .OrderByDescending(r => r.Date)
-                .FirstOrDefault();
-
-            return rate;
         }
 
         public DateTime SelectLatestDate()
@@ -48,6 +34,16 @@ namespace DataAccessLibrary.Repositories
                 _dbContext.AddRange(newRates);
                 _dbContext.SaveChanges();
             }
+        }
+
+        public Rate SelectRate(string currencyCode, DateTime date)
+        {
+            var rate = _dbContext.Rates
+                    .Include(r => r.Currency)
+                    .Where(r => r.Date == date && r.Currency!.Code == currencyCode)
+                    .First();
+
+            return rate;
         }
     }
 }

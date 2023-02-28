@@ -12,6 +12,11 @@ namespace DataAccessLibrary.Repositories
             _dbContext = dbContext;
         }
 
+        public IEnumerable<Currency> GetCurrencies()
+        {
+            return _dbContext.Currencies.ToList();
+        }
+
         public void InsertIfNotExists(List<Currency> currencies)
         {
             var existingRates = _dbContext.Currencies.ToList();

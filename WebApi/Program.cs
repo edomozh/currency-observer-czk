@@ -1,6 +1,8 @@
 using DataAccessLibrary.Contexts;
+using DataAccessLibrary.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
+using WebApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(connectionString, x => x.MigrationsAssembly("DataAccessLibrary"));
         }
     );
+
+builder.Services.AddScoped<RateRepository>();
+builder.Services.AddScoped<CurrencyRepository>();
+
+builder.Services.AddControllers();
+builder.Services.AddScoped<RateService>();
+builder.Services.AddScoped<CurrencyService>();
 
 var app = builder.Build();
 
