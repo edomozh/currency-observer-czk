@@ -22,7 +22,7 @@ namespace WebApi.Services
             return new Rate
             {
                 CurrencyCode = currencyCode,
-                Value = rate.Value * rate.Currency!.Multiplier
+                Value = rate.Value / rate.Currency!.Multiplier
             };
         }
     }
