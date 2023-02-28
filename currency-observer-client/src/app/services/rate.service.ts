@@ -13,7 +13,7 @@ export class RateService {
   constructor(private http: HttpClient) { }
 
   getRate(currencyCode: string, date: string): Observable<Rate> {
-    const url = `${this.apiUrl}/${currencyCode}/${date}`;
+    const url = `${this.apiUrl}/?currencyCode=${currencyCode}&ddMMyyyyDate=${date}`;
     return this.http.get<Rate>(url);
   }
 }

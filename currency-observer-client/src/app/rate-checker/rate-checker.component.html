@@ -1,0 +1,8 @@
+<app-date-picker (dateSelected)="onDateSelected($event)"></app-date-picker>
+
+<select [(ngModel)]="selectedCurrency" (ngModelChange)="getRate()">
+  <option value="USD" selected>Choose some currency</option>
+  <option *ngFor="let currency of currencies" [value]="currency.code">{{ currency.code }}</option>
+</select>
+
+<div>{{ rate?.value }}</div>

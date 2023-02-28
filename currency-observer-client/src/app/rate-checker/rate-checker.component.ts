@@ -7,20 +7,14 @@ import { Rate } from '../interfaces/rate';
 
 @Component({
   selector: 'app-rate-checker',
-  template: `
-    <p>
-    <select [(ngModel)]="selectedCurrency">
-      <option value="USD" selected>USD</option>
-      <option *ngFor="let currency of currencies" [value]="currency">{{ currency.code }}</option>
-    </select>
-    </p>
-  `,
-  styles: [
-  ]
+  templateUrl: './rate-checker.component.html',
+  styles: []
 })
 export class RateCheckerComponent implements OnInit {
+
   currencies: Currency[] = [];
   selectedCurrency: string = 'USD';
+  selectedDate: string = '01022023';
   rate: Rate | null = null;
 
   constructor(
@@ -32,7 +26,12 @@ export class RateCheckerComponent implements OnInit {
   }
 
   getRate() {
-    this.rateService.getRate(this.selectedCurrency, '02282023').subscribe(value => this.rate = value);
+    this.rateService.getRate(this.selectedCurrency, this.selectedDate).subscribe(value => this.rate = value);
+  }
+
+  onDateSelected(date: string): void {
+    this.selectedDate = date;
+    this.getRate();
   }
 }
 
