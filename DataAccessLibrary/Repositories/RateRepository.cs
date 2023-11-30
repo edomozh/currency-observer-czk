@@ -1,6 +1,7 @@
 ﻿using DataAccessLibrary.Contexts;
 using DataAccessLibrary.Entities;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace DataAccessLibrary.Repositories
 {
@@ -13,7 +14,7 @@ namespace DataAccessLibrary.Repositories
             _dbContext = dbContext;
         }
 
-        public DateTime SelectLatestDate()
+        public DateTime SelectLatestOrMinDate()
         {
             var rate = _dbContext.Rates
                 .OrderByDescending(r => r.Date)
@@ -24,10 +25,10 @@ namespace DataAccessLibrary.Repositories
 
         public void InsertIfNotExists(List<Rate> rates)
         {
-            var existingRates = _dbContext.Rates.ToList();
-            var newRates = rates
-                    .Where(c => !existingRates.Any(ec => ec.Date == c.Date && ec.CurrencyId == c.CurrencyId))
-                    .ToList();
+            var existingRates = _dbContext.Rates
+                .Where(er => rates.Any(r => r.Date == er.Date && r.CurrencyId == er.CurrencyId));
+
+            var newRates = rates.Except(existingRates);
 
             if (newRates.Any())
             {

@@ -22,7 +22,7 @@ namespace GrabExchangeRatesService
             var rateRepository = new RateRepository(appDbContext);
 
             // get a last date from db
-            var latestRate = rateRepository.SelectLatestDate();
+            var latestRate = rateRepository.SelectLatestOrMinDate();
 
             if (latestRate.Date.CompareTo(DateTime.Now.Date) == 0)
             {
@@ -38,7 +38,7 @@ namespace GrabExchangeRatesService
 
             // parse currencies and save
             var currencies = GetCurrenciesFromCsvHeaders(validCsvLists);
-            currencyRepository.InsertIfNotExistsAndFillId(currencies);
+            currencyRepository.InsertIfNotExistsOrFillId(currencies);
 
             // parse rates and save
             var rates = GetRates(validCsvLists, currencies);

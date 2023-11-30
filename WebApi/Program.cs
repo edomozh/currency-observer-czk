@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var connectionString = builder.Configuration.GetConnectionString("CurrencyDatabase");
+var connectionString = builder.Configuration.GetConnectionString("CurrencyObserverCZK");
 builder.Services.AddDbContext<AppDbContext>(options =>
         {
             options.UseSqlServer(connectionString, x => x.MigrationsHistoryTable(HistoryRepository.DefaultTableName));
@@ -47,11 +47,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowSpecificOrigins");
 
 app.UseRouting();
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllers();
-});
+app.MapControllers();
 
 app.UseHttpsRedirection();
-
 app.Run();
